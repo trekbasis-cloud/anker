@@ -2,8 +2,8 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=5.0">
-<title>ANKER – Akt I: Absentia</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>ANKER — Akt I: Absentia</title>
 <style>
   :root{
     --void:#05070a;
@@ -17,7 +17,6 @@
     --text-dim:#7c8a93;
     --font-display:'Jefferies','Eurostile Extended','Orbitron',sans-serif;
     --font-ui:'Eurostile','Antonio','Arial Narrow',sans-serif;
-
   }
 
   @font-face{
@@ -48,6 +47,11 @@
     justify-content:space-between;
     padding:0 14px;
     backdrop-filter:blur(2px);
+    transition:transform 0.3s ease;
+  }
+
+  .logbar.hidden{
+    transform:translateY(-100%);
   }
 
   .logbar-title{
@@ -153,13 +157,22 @@
     padding-top:56px;
     display:flex;
     justify-content:center;
+    width:100%;
   }
 
   .strip{
     width:100%;
-    max-width:560px;
     display:flex;
-    flex-direction:column; 
+    flex-direction:column;
+  }
+
+  /* Erst ab echter Desktop-Breite (gr\u00f6\u00dfer als gro\u00dfe Tablets im Querformat)
+     wird die Lesebreite begrenzt, damit Panels nicht riesig/verzerrt wirken.
+     Handys und Tablets (auch im Querformat) bleiben randlos auf voller Breite. */
+  @media (min-width: 1180px){
+    .strip{
+      max-width:560px;
+    }
   }
 
   .panel{
@@ -447,10 +460,32 @@
     }
   }
 
+  var lastScrollY = window.scrollY;
+  var logbar = document.querySelector('.logbar');
+  var HIDE_THRESHOLD = 10; // Mindest-Scrolldistanz, bevor reagiert wird (vermeidet Zittern)
+
+  function updateHeaderVisibility(){
+    var currentScrollY = window.scrollY;
+    var delta = currentScrollY - lastScrollY;
+
+    if (Math.abs(delta) < HIDE_THRESHOLD) return;
+
+    if (delta > 0 && currentScrollY > 80){
+      // Nach unten scrollen, und nicht mehr ganz oben: Header ausblenden
+      logbar.classList.add('hidden');
+    } else if (delta < 0){
+      // Nach oben scrollen: Header wieder einblenden
+      logbar.classList.remove('hidden');
+    }
+
+    lastScrollY = currentScrollY;
+  }
+
   window.addEventListener('scroll', function(){
     if (!ticking){
       window.requestAnimationFrame(function(){
         updateSensorRail();
+        updateHeaderVisibility();
         ticking = false;
       });
       ticking = true;
