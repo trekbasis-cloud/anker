@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>ANKER — Akt I: Absentia</title>
+<style>
+  :root{
+    --void:#05070a;
+    --panel-bg:#0c1016;
+    --amber:#e8a33d;
+    --amber-dim:#7a5a26;
+    --steel:#5c7a8c;
+    --steel-bright:#8fc4dd;
+    --alert:#c8453a;
+    --text-main:#e9edf0;
+    --text-dim:#7c8a93;
+    --font-display:'Jefferies','Eurostile Extended','Orbitron',sans-serif;
+    --font-ui:'Eurostile','Antonio','Arial Narrow',sans-serif;
+    --strip-width: min(100vw, 560px);
+  }
+
+  @font-face{
+    font-family:'Jefferies';
+    src: local('Jefferies'), local('Jefferies Extended');
+    font-weight: normal;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{
+    background:var(--void);
+    color:var(--text-main);
+    font-family:var(--font-ui);
+    width:100%;
+    overflow-x:hidden;
+  }
+
+  /* ---------- HEADER / LOGBOOK BAR ---------- */
+  .logbar{
+    position:fixed;
+    top:0; left:0; right:0;
+    z-index:50;
+    height:56px;
+    background:linear-gradient(180deg, rgba(5,7,10,0.97) 0%, rgba(5,7,10,0.85) 80%, transparent 100%);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 14px;
+    backdrop-filter:blur(2px);
+  }
+
+  .logbar-title{
+    display:flex;
+    flex-direction:column;
+    line-height:1;
+  }
+
+  .logbar-title .name{
+    font-family:var(--font-display);
+    letter-spacing:0.12em;
+    font-size:18px;
+    color:var(--steel-bright);
+    text-transform:uppercase;
+  }
+
+  .logbar-title .sub{
+    font-size:10px;
+    letter-spacing:0.18em;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    margin-top:2px;
+  }
+
+  .lang-toggle{
+    display:flex;
+    border:1px solid var(--amber-dim);
+    border-radius:2px;
+    overflow:hidden;
+  }
+
+  .lang-btn{
+    appearance:none;
+    border:none;
+    background:transparent;
+    color:var(--text-dim);
+    font-family:var(--font-ui);
+    font-size:12px;
+    letter-spacing:0.1em;
+    padding:7px 12px;
+    cursor:pointer;
+    transition:background 0.15s, color 0.15s;
+  }
+
+  .lang-btn.active{
+    background:var(--amber);
+    color:#1a1304;
+    font-weight:600;
+  }
+
+  .lang-btn:not(.active):hover{
+    color:var(--steel-bright);
+  }
+
+  /* ---------- SENSOR PROGRESS RAIL (signature element) ---------- */
+  .sensor-rail{
+    position:fixed;
+    left:0; top:0; bottom:0;
+    width:14px;
+    z-index:40;
+    display:flex;
+    flex-direction:column;
+    padding:60px 0 24px 0;
+    pointer-events:none;
+  }
+
+  .sensor-seg{
+    flex:1;
+    margin:1px 3px;
+    background:rgba(92,122,140,0.18);
+    border-radius:1px;
+    transition:background 0.3s ease;
+  }
+
+  .sensor-seg.lit{
+    background:var(--steel-bright);
+    box-shadow:0 0 6px rgba(143,196,221,0.6);
+  }
+
+  .sensor-seg.current{
+    background:var(--amber);
+    box-shadow:0 0 8px rgba(232,163,61,0.8);
+  }
+
+  .sensor-readout{
+    position:fixed;
+    left:18px;
+    bottom:14px;
+    z-index:40;
+    font-size:10px;
+    letter-spacing:0.08em;
+    color:var(--text-dim);
+    font-family:var(--font-ui);
+  }
+
+  .sensor-readout .num{
+    color:var(--amber);
+    font-weight:600;
+  }
+
+  /* ---------- READER STRIP ---------- */
+  .reader{
+    padding-top:56px;
+    display:flex;
+    justify-content:center;
+  }
+
+  .strip{
+    width:var(--strip-width);
+    display:flex;
+    flex-direction:column;
+  }
+
+  .panel{
+    width:100%;
+    aspect-ratio:1080/1920;
+    background:var(--panel-bg);
+    display:block;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .panel img{
+    width:100%;
+    height:100%;
+    display:block;
+    object-fit:cover;
+  }
+
+  /* Platzhalter-Optik, bis echte Panels eingebunden sind */
+  .panel.placeholder{
+    background:
+      repeating-linear-gradient(135deg, rgba(92,122,140,0.06) 0 2px, transparent 2px 14px),
+      linear-gradient(160deg, #10151c 0%, #0a0d12 100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-top:1px solid rgba(92,122,140,0.12);
+  }
+
+  .ph-label{
+    display:none;
+  }
+
+  .panel.placeholder .ph-label{
+    display:block;
+    font-family:var(--font-display);
+    font-size:15px;
+    letter-spacing:0.15em;
+    color:var(--text-dim);
+    text-align:center;
+    text-transform:uppercase;
+  }
+
+  .panel.placeholder .ph-label .ph-num{
+    display:block;
+    font-size:34px;
+    color:var(--amber-dim);
+    margin-bottom:6px;
+  }
+
+  /* Markierung an den wenigen nicht-nahtlosen Übergängen */
+  .panel.seam-break{
+    border-top:2px solid var(--alert);
+  }
+
+  /* ---------- END CARD ---------- */
+  .end-card{
+    width:100%;
+    padding:60px 20px 100px;
+    text-align:center;
+  }
+
+  .end-card .line{
+    font-family:var(--font-display);
+    color:var(--steel-bright);
+    letter-spacing:0.12em;
+    font-size:13px;
+    text-transform:uppercase;
+  }
+
+  .end-card .sub{
+    margin-top:10px;
+    font-size:11px;
+    color:var(--text-dim);
+    letter-spacing:0.06em;
+  }
+
+  /* ---------- RESPONSIVE / FOCUS ---------- */
+  .lang-btn:focus-visible, button:focus-visible{
+    outline:2px solid var(--steel-bright);
+    outline-offset:2px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    * { transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="logbar">
+    <div class="logbar-title">
+      <span class="name" id="title-text">ANKER</span>
+      <span class="sub" id="subtitle-text">Akt I · Absentia</span>
+    </div>
+    <div class="lang-toggle" role="group" aria-label="Sprache">
+      <button class="lang-btn active" data-lang="de" id="btn-de">DE</button>
+      <button class="lang-btn" data-lang="en" id="btn-en">EN</button>
+    </div>
+  </div>
+
+  <div class="sensor-rail" id="sensor-rail" aria-hidden="true"></div>
+  <div class="sensor-readout">
+    PANEL <span class="num" id="panel-readout">001</span> / <span id="panel-total">064</span>
+  </div>
+
+  <div class="reader">
+    <div class="strip" id="strip"></div>
+  </div>
+
+<script>
+(function(){
+  // ---------- KONFIGURATION ----------
+  // Reichweite der echten Panels: 1 bis TOTAL_PANELS.
+  // Dateien werden erwartet als: images/{nnnnn}_{lang}.webp  (z.B. 00001_de.webp)
+  var TOTAL_PANELS = 64;
+  var IMAGE_DIR = 'images/';
+  var PAD_LENGTH = 5; // Anzahl der Stellen in der Dateinummer, z.B. 00001 = 5
+
+  // Trage hier die Panel-Nummern ein, bei denen der Übergang NICHT nahtlos ist
+  // (erzeugt eine dezente rote Trennlinie zur Orientierung beim Feintuning;
+  // kann später entfernt werden, sobald das Spacing final ist)
+  var SEAM_BREAKS = []; // z.B. [12, 37]
+
+  var currentLang = 'de';
+  var strip = document.getElementById('strip');
+  var sensorRail = document.getElementById('sensor-rail');
+  var panelReadout = document.getElementById('panel-readout');
+  var panelTotalEl = document.getElementById('panel-total');
+  panelTotalEl.textContent = String(TOTAL_PANELS).padStart(PAD_LENGTH,'0');
+
+  var panelEls = []; // { wrapper, img, num }
+
+  function pad3(n){ return String(n).padStart(PAD_LENGTH,'0'); }
+
+  function buildStrip(){
+    strip.innerHTML = '';
+    panelEls = [];
+
+    for (var i = 1; i <= TOTAL_PANELS; i++){
+      var wrapper = document.createElement('div');
+      wrapper.className = 'panel placeholder';
+      if (SEAM_BREAKS.indexOf(i) !== -1) wrapper.classList.add('seam-break');
+      wrapper.dataset.panel = i;
+
+      var img = document.createElement('img');
+      img.alt = 'Panel ' + pad3(i);
+      img.style.display = 'none';
+
+      img.onload = function(){
+        this.parentElement.classList.remove('placeholder');
+        this.style.display = 'block';
+      };
+      img.onerror = function(){
+        // Bild fehlt (noch) -> Platzhalter bleibt sichtbar mit Nummer
+      };
+
+      var label = document.createElement('div');
+      label.className = 'ph-label';
+      label.innerHTML = '<span class="ph-num">' + pad3(i) + '</span>Panel wird geladen …';
+
+      wrapper.appendChild(label);
+      wrapper.appendChild(img);
+      strip.appendChild(wrapper);
+
+      panelEls.push({ wrapper: wrapper, img: img, num: i });
+    }
+
+    var endCard = document.createElement('div');
+    endCard.className = 'end-card';
+    endCard.innerHTML =
+      '<div class="line" id="endcard-line">ENDE AKT I — ABSENTIA</div>' +
+      '<div class="sub" id="endcard-sub">…und das Abenteuer geht weiter…</div>';
+    strip.appendChild(endCard);
+
+    buildSensorRail();
+    loadVisibleImages();
+  }
+
+  function buildSensorRail(){
+    sensorRail.innerHTML = '';
+    for (var i = 1; i <= TOTAL_PANELS; i++){
+      var seg = document.createElement('div');
+      seg.className = 'sensor-seg';
+      seg.dataset.panel = i;
+      sensorRail.appendChild(seg);
+    }
+  }
+
+  var observer = null;
+
+  function setLanguageSources(){
+    // Beim Sprachwechsel: alle Panels zurücksetzen und neu beobachten,
+    // damit jedes Panel sein Bild für die neue Sprache neu lädt.
+    if (observer) observer.disconnect();
+
+    panelEls.forEach(function(p){
+      p.img.removeAttribute('src');
+      p.img.style.display = 'none';
+      p.wrapper.classList.add('placeholder');
+      p.loaded = false;
+    });
+
+    setupObserver();
+  }
+
+  function loadPanelImage(p){
+    if (p.loaded) return;
+    p.loaded = true;
+    var src = IMAGE_DIR + pad3(p.num) + '_' + currentLang + '.webp';
+    p.img.src = src;
+  }
+
+  function setupObserver(){
+    // IntersectionObserver statt nativem loading="lazy":
+    // zuverlässiges Nachladen auch bei lokalen file://-Seiten in Chrome,
+    // wo natives lazy-loading beim Scrollen nicht immer zuverlässig nachfeuert.
+    observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting){
+          var num = parseInt(entry.target.dataset.panel, 10);
+          var p = panelEls[num - 1];
+          if (p) loadPanelImage(p);
+        }
+      });
+    }, {
+      root: null,
+      rootMargin: '1200px 0px 1200px 0px', // großzügiger Vorlade-Puffer über/unter dem Sichtbereich
+      threshold: 0.01
+    });
+
+    panelEls.forEach(function(p){
+      observer.observe(p.wrapper);
+    });
+  }
+
+  function loadVisibleImages(){
+    setLanguageSources();
+  }
+
+  // ---------- SPRACHUMSCHALTER ----------
+  var i18n = {
+    de:{ title:'ANKER', sub:'Akt I · Absentia', end:'ENDE AKT I — ABSENTIA', endsub:'…und das Abenteuer geht weiter…' },
+    en:{ title:'ANCHOR', sub:'Act I · Absentia', end:'END OF ACT I — ABSENTIA', endsub:'…and the adventure continues…' }
+  };
+
+  function setLang(lang){
+    currentLang = lang;
+    document.getElementById('btn-de').classList.toggle('active', lang === 'de');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.getElementById('title-text').textContent = i18n[lang].title;
+    document.getElementById('subtitle-text').textContent = i18n[lang].sub;
+    document.documentElement.lang = lang;
+    var endLine = document.getElementById('endcard-line');
+    var endSub = document.getElementById('endcard-sub');
+    if (endLine) endLine.textContent = i18n[lang].end;
+    if (endSub) endSub.textContent = i18n[lang].endsub;
+    setLanguageSources();
+  }
+
+  document.getElementById('btn-de').addEventListener('click', function(){ setLang('de'); });
+  document.getElementById('btn-en').addEventListener('click', function(){ setLang('en'); });
+
+  // ---------- SCROLL-TRACKING FÜR SENSOR-LEISTE ----------
+  var ticking = false;
+
+  function updateSensorRail(){
+    var viewportCenter = window.scrollY + window.innerHeight * 0.4;
+    var current = 1;
+
+    for (var i = 0; i < panelEls.length; i++){
+      var rect = panelEls[i].wrapper.getBoundingClientRect();
+      var top = rect.top + window.scrollY;
+      if (top <= viewportCenter) current = panelEls[i].num;
+    }
+
+    panelReadout.textContent = pad3(current);
+
+    var segs = sensorRail.children;
+    for (var s = 0; s < segs.length; s++){
+      var segNum = s + 1;
+      segs[s].classList.remove('lit','current');
+      if (segNum < current) segs[s].classList.add('lit');
+      else if (segNum === current) segs[s].classList.add('current');
+    }
+  }
+
+  window.addEventListener('scroll', function(){
+    if (!ticking){
+      window.requestAnimationFrame(function(){
+        updateSensorRail();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive:true });
+
+  // ---------- INIT ----------
+  buildStrip();
+  updateSensorRail();
+})();
+</script>
+
+</body>
+</html>
