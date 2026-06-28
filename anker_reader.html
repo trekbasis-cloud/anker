@@ -2,7 +2,8 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>ANKER — Akt I: Absentia</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=5.0">
+<title>ANKER – Akt I: Absentia</title>
 <style>
   :root{
     --void:#05070a;
@@ -16,7 +17,7 @@
     --text-dim:#7c8a93;
     --font-display:'Jefferies','Eurostile Extended','Orbitron',sans-serif;
     --font-ui:'Eurostile','Antonio','Arial Narrow',sans-serif;
-    --strip-width: min(100vw, 560px);
+
   }
 
   @font-face{
@@ -155,9 +156,10 @@
   }
 
   .strip{
-    width:var(--strip-width);
+    width:100%;
+    max-width:560px;
     display:flex;
-    flex-direction:column;
+    flex-direction:column; 
   }
 
   .panel{
